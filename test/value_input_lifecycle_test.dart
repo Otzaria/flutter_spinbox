@@ -182,6 +182,24 @@ void main() {
     expect(submissions, <double>[7]);
   });
 
+  testWidgets('focus loss after keyboard completion does not resubmit',
+      (tester) async {
+    final submissions = <double>[];
+    await tester.pumpWidget(
+      _app(SpinBox(
+        value: 7,
+        autofocus: true,
+        onSubmitted: submissions.add,
+      )),
+    );
+    await tester.showKeyboard(find.byType(SpinBox));
+    final state = tester.state<SpinBoxState>(find.byType(SpinBox));
+    state.submitValue('7');
+    state.focusNode.unfocus();
+    await tester.pump();
+    expect(submissions, <double>[7]);
+  });
+
   testWidgets('non-finite programmatic steps are ignored', (tester) async {
     final changes = <double>[];
     await tester.pumpWidget(
