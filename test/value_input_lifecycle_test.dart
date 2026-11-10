@@ -166,6 +166,22 @@ void main() {
     expect(state.controller.text, '0.2');
   });
 
+  testWidgets('Done invokes onSubmitted only once after focus loss',
+      (tester) async {
+    final submissions = <double>[];
+    await tester.pumpWidget(
+      _app(SpinBox(
+        value: 7,
+        autofocus: true,
+        onSubmitted: submissions.add,
+      )),
+    );
+    await tester.showKeyboard(find.byType(SpinBox));
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+    expect(submissions, <double>[7]);
+  });
+
   testWidgets('non-finite programmatic steps are ignored', (tester) async {
     final changes = <double>[];
     await tester.pumpWidget(

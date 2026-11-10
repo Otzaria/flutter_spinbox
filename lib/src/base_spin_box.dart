@@ -54,6 +54,7 @@ mixin SpinBoxMixin<T extends BaseSpinBox> on State<T> {
   late SpinFormatter _formatter;
   late Map<ShortcutActivator, VoidCallback> _bindings;
   bool _updatingController = false;
+  bool _submittedOnBlur = false;
 
   double get value => _value;
   bool get hasFocus => _focusNode.hasFocus;
@@ -210,12 +211,27 @@ mixin SpinBoxMixin<T extends BaseSpinBox> on State<T> {
     return _cachedValue;
   }
 
+  /// Handle keyboard completion without double-submitting the focus loss.
+  ///
+  /// EditableText's default editing completion unfocuses before it calls
+  /// onSubmitted, which otherwise invokes our onSubmitted twice.
+  void submitValue(String text) {
+    if (_submittedOnBlur) {
+      _submittedOnBlur = false;
+      return;
+    }
+    final value = fixupValue(text);
+    widget.onSubmitted?.call(value);
+  }
+
   void _handleFocusChanged() {
     setState(() {
       if (hasFocus) {
+        _submittedOnBlur = false;
         _selectAll();
       } else {
         final value = fixupValue(_controller.text);
+        _submittedOnBlur = true;
         widget.onSubmitted?.call(value);
       }
     });
