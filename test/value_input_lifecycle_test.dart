@@ -153,10 +153,9 @@ void main() {
     expect(changes, <double>[3]);
   });
 
-  testWidgets('step rounding never escapes fractional bounds',
-      (tester) async {
+  testWidgets('step rounding never escapes fractional bounds', (tester) async {
     await tester.pumpWidget(
-      _app(SpinBox(min: 0, max: 0.29, value: 0.2, step: 0.1, decimals: 1)),
+      _app(SpinBox(max: 0.29, value: 0.2, step: 0.1, decimals: 1)),
     );
     await tester.tap(find.byIcon(Icons.add));
     await tester.pump();
@@ -166,8 +165,7 @@ void main() {
     expect(state.controller.text, '0.2');
   });
 
-  testWidgets('Done invokes onSubmitted only once after focus loss',
-      (tester) async {
+  testWidgets('Done submits only once after focus loss', (tester) async {
     final submissions = <double>[];
     await tester.pumpWidget(
       _app(SpinBox(
@@ -182,8 +180,7 @@ void main() {
     expect(submissions, <double>[7]);
   });
 
-  testWidgets('focus loss after keyboard completion does not resubmit',
-      (tester) async {
+  testWidgets('focus loss does not resubmit after Done', (tester) async {
     final submissions = <double>[];
     await tester.pumpWidget(
       _app(SpinBox(
