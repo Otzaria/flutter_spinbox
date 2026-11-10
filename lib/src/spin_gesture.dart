@@ -61,12 +61,15 @@ class _SpinGestureState extends State<SpinGesture> {
   @override
   void didUpdateWidget(covariant SpinGesture oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // A held button must not keep using stale timing or step parameters.
-    if (!widget.enabled ||
-        oldWidget.step != widget.step ||
+    if (!widget.enabled) {
+      stopTimer();
+    } else if (oldWidget.step != widget.step ||
         oldWidget.interval != widget.interval ||
         oldWidget.acceleration != widget.acceleration) {
+      // Keep a held button spinning, but with the updated parameters.
+      final wasSpinning = timer != null;
       stopTimer();
+      if (wasSpinning) startTimer();
     }
   }
 

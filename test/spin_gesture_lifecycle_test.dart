@@ -74,6 +74,24 @@ void main() {
     await gesture.up();
   });
 
+  testWidgets('a step changed while held keeps spinning with the new step', (
+    tester,
+  ) async {
+    final changes = <double>[];
+    await tester.pumpWidget(_harness(onStep: changes.add));
+
+    final center = tester.getCenter(find.byType(SpinGesture));
+    final gesture = await tester.startGesture(center);
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 150));
+    expect(changes, isNotEmpty);
+
+    await tester.pumpWidget(_harness(onStep: changes.add, step: 3));
+    final count = changes.length;
+    await tester.pump(const Duration(milliseconds: 350));
+    expect(changes.skip(count), [3, 3, 3]);
+    await gesture.up();
+  });
+
   testWidgets('zero interval does not create a busy timer', (tester) async {
     final changes = <double>[];
     await tester.pumpWidget(
