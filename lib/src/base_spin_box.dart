@@ -137,6 +137,7 @@ mixin SpinBoxMixin<T extends BaseSpinBox> on State<T> {
     // A temporarily out-of-range number is allowed while typing, but must
     // not trigger expensive client-side work until it is a valid value.
     if (parsed >= widget.min && parsed <= widget.max) {
+      _cachedValue = parsed;
       widget.onChanged?.call(parsed);
     }
   }

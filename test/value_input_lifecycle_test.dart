@@ -45,6 +45,26 @@ void main() {
     expect(state.controller.text, '3');
   });
 
+  testWidgets('accepted text updates the empty-input rollback', (tester) async {
+    final changes = <double>[];
+    await tester.pumpWidget(
+      _app(SpinBox(value: 2, autofocus: true, onChanged: changes.add)),
+    );
+    await tester.pump();
+
+    await tester.enterText(find.byType(TextField), '7');
+    await tester.pump();
+    expect(changes, <double>[7]);
+
+    await tester.enterText(find.byType(TextField), '');
+    final state = tester.state<SpinBoxState>(find.byType(SpinBox));
+    state.focusNode.unfocus();
+    await tester.pump();
+
+    expect(state.value, 7);
+    expect(state.controller.text, '7');
+  });
+
   testWidgets('negative zero padding keeps the sign', (tester) async {
     await tester.pumpWidget(_app(SpinBox(min: -10, value: -3, digits: 4)));
     final state = tester.state<SpinBoxState>(find.byType(SpinBox));
