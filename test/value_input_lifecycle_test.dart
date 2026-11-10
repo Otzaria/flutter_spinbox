@@ -1,0 +1,145 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_spinbox/material.dart';
+import 'package:flutter_spinbox/src/spin_formatter.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+Widget _app(SpinBox spinBox) {
+  return MaterialApp(home: Scaffold(body: Center(child: spinBox)));
+}
+
+void main() {
+  testWidgets('clearing input does not notify a false zero', (tester) async {
+    final changes = <double>[];
+    await tester.pumpWidget(
+      _app(SpinBox(value: 5, autofocus: true, onChanged: changes.add)),
+    );
+    await tester.pump();
+
+    await tester.enterText(find.byType(TextField), '');
+    await tester.pump();
+
+    expect(changes, isEmpty);
+    final state = tester.state<SpinBoxState>(find.byType(SpinBox));
+    expect(state.value, 5);
+    expect(state.controller.text, '');
+
+    state.focusNode.unfocus();
+    await tester.pump();
+    expect(state.value, 5);
+    expect(state.controller.text, '5');
+  });
+
+  testWidgets('steps update rollback value', (tester) async {
+    await tester.pumpWidget(_app(SpinBox(value: 2, autofocus: true)));
+    await tester.pump();
+
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
+    final state = tester.state<SpinBoxState>(find.byType(SpinBox));
+    expect(state.value, 3);
+
+    await tester.enterText(find.byType(TextField), '');
+    state.focusNode.unfocus();
+    await tester.pump();
+    expect(state.value, 3);
+    expect(state.controller.text, '3');
+  });
+
+  testWidgets('negative zero padding keeps the sign', (tester) async {
+    await tester.pumpWidget(_app(SpinBox(min: -10, value: -3, digits: 4)));
+    final state = tester.state<SpinBoxState>(find.byType(SpinBox));
+    expect(state.controller.text, '-003');
+
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
+    expect(state.value, -2);
+    expect(state.controller.text, '-002');
+  });
+
+  testWidgets('focus node replacement updates state', (tester) async {
+    final first = FocusNode();
+    final second = FocusNode();
+    addTearDown(first.dispose);
+    addTearDown(second.dispose);
+
+    await tester.pumpWidget(_app(SpinBox(value: 5, focusNode: first)));
+    await tester.pumpWidget(_app(SpinBox(value: 5, focusNode: second)));
+
+    final state = tester.state<SpinBoxState>(find.byType(SpinBox));
+    expect(state.focusNode, same(second));
+    second.requestFocus();
+    await tester.pump();
+    expect(state.hasFocus, isTrue);
+  });
+
+  testWidgets('shrinking bounds constrains the value', (tester) async {
+    await tester.pumpWidget(_app(SpinBox(max: 30, value: 10)));
+    await tester.pumpWidget(_app(SpinBox(min: 11, max: 30, value: 10)));
+
+    final state = tester.state<SpinBoxState>(find.byType(SpinBox));
+    expect(state.value, 11);
+    expect(state.controller.text, '11');
+  });
+
+  testWidgets('controlled parent preserves typed text', (tester) async {
+    double value = 1;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: StatefulBuilder(
+            builder: (context, setState) => SpinBox(
+              value: value,
+              decimals: 2,
+              autofocus: true,
+              onChanged: (v) => setState(() => value = v),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.enterText(find.byType(TextField), '3.4');
+    await tester.pump();
+    final state = tester.state<SpinBoxState>(find.byType(SpinBox));
+    expect(state.controller.text, '3.4');
+    expect(state.value, 3.4);
+  });
+
+  testWidgets('input helpers are reused on rebuild', (tester) async {
+    await tester.pumpWidget(_app(SpinBox(value: 5, pageStep: 10)));
+    final state = tester.state<SpinBoxState>(find.byType(SpinBox));
+    final formatter = state.formatter;
+    final bindings = state.bindings;
+
+    await tester.pumpWidget(_app(SpinBox(value: 6, pageStep: 10)));
+    expect(state.formatter, same(formatter));
+    expect(state.bindings, same(bindings));
+
+    await tester.pumpWidget(
+      _app(SpinBox(value: 6, decimals: 2, pageStep: 10)),
+    );
+    expect(state.formatter, isNot(same(formatter)));
+    expect(state.bindings, same(bindings));
+  });
+
+  testWidgets('button step sends one numeric change callback', (tester) async {
+    final changes = <double>[];
+    await tester.pumpWidget(
+      _app(SpinBox(value: 2, onChanged: changes.add)),
+    );
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
+    expect(changes, <double>[3]);
+  });
+
+  test('a decimal separator can start fractional input', () {
+    final formatter = SpinFormatter(min: -10, max: 10, decimals: 2);
+    const oldValue = TextEditingValue(text: '0');
+    const dot = TextEditingValue(text: '.');
+    const signedDot = TextEditingValue(text: '-.');
+    expect(formatter.formatEditUpdate(oldValue, dot), dot);
+    expect(formatter.formatEditUpdate(oldValue, signedDot), signedDot);
+  });
+}
