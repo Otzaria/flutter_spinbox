@@ -14,8 +14,7 @@ void main() {
     expect(small.hashCode, isNot(large.hashCode));
   });
 
-  testWidgets('a SpinBox without buttons has no empty prefix or suffix',
-      (tester) async {
+  testWidgets('no empty slots without buttons', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -24,15 +23,15 @@ void main() {
       ),
     );
 
-    final decoration = tester.widget<TextField>(find.byType(TextField)).decoration;
+    final field = tester.widget<TextField>(find.byType(TextField));
+    final decoration = field.decoration;
     expect(decoration, isNotNull);
     expect(decoration!.prefix, isNull);
     expect(decoration.suffix, isNull);
     expect(find.byType(IconButton), findsNothing);
   });
 
-  testWidgets('custom decoration widgets are retained without spin buttons',
-      (tester) async {
+  testWidgets('custom decorations survive hidden buttons', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
