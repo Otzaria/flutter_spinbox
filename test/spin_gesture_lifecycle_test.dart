@@ -28,12 +28,12 @@ Widget _harness({
 }
 
 void main() {
-  testWidgets('canceling a long press stops repeated callbacks', (tester) async {
+  testWidgets('cancel stops repeated callbacks', (tester) async {
     final changes = <double>[];
     await tester.pumpWidget(_harness(onStep: changes.add));
 
-    final gesture =
-        await tester.startGesture(tester.getCenter(find.byType(SpinGesture)));
+    final center = tester.getCenter(find.byType(SpinGesture));
+    final gesture = await tester.startGesture(center);
     await tester.pump(kLongPressTimeout + const Duration(milliseconds: 200));
     expect(changes, isNotEmpty);
 
@@ -44,12 +44,12 @@ void main() {
     expect(changes, hasLength(count));
   });
 
-  testWidgets('disabling while held stops the repeat timer', (tester) async {
+  testWidgets('disable stops repeated callbacks', (tester) async {
     final changes = <double>[];
     await tester.pumpWidget(_harness(onStep: changes.add));
 
-    final gesture =
-        await tester.startGesture(tester.getCenter(find.byType(SpinGesture)));
+    final center = tester.getCenter(find.byType(SpinGesture));
+    final gesture = await tester.startGesture(center);
     await tester.pump(kLongPressTimeout + const Duration(milliseconds: 200));
     expect(changes, isNotEmpty);
 
@@ -60,13 +60,13 @@ void main() {
     await gesture.up();
   });
 
-  testWidgets('a changed step is used on the next long press', (tester) async {
+  testWidgets('a changed step is used on the next press', (tester) async {
     final changes = <double>[];
-    await tester.pumpWidget(_harness(onStep: changes.add, step: 1));
+    await tester.pumpWidget(_harness(onStep: changes.add));
     await tester.pumpWidget(_harness(onStep: changes.add, step: 3));
 
-    final gesture =
-        await tester.startGesture(tester.getCenter(find.byType(SpinGesture)));
+    final center = tester.getCenter(find.byType(SpinGesture));
+    final gesture = await tester.startGesture(center);
     await tester.pump(kLongPressTimeout + const Duration(milliseconds: 150));
 
     expect(changes, isNotEmpty);
@@ -74,13 +74,13 @@ void main() {
     await gesture.up();
   });
 
-  testWidgets('zero repeat interval never creates a busy timer', (tester) async {
+  testWidgets('zero interval does not create a busy timer', (tester) async {
     final changes = <double>[];
     await tester.pumpWidget(
       _harness(onStep: changes.add, interval: Duration.zero),
     );
-    final gesture =
-        await tester.startGesture(tester.getCenter(find.byType(SpinGesture)));
+    final center = tester.getCenter(find.byType(SpinGesture));
+    final gesture = await tester.startGesture(center);
     await tester.pump(kLongPressTimeout + const Duration(seconds: 1));
     expect(changes, isEmpty);
     await gesture.up();
