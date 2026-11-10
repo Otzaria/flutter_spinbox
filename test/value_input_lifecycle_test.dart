@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_spinbox/material.dart';
 import 'package:flutter_spinbox/src/spin_formatter.dart';
 import 'package:flutter_test/flutter_test.dart';
