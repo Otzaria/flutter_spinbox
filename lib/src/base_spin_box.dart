@@ -126,9 +126,8 @@ mixin SpinBoxMixin<T extends BaseSpinBox> on State<T> {
     if (parsed == null || !parsed.isFinite || parsed == _value) return;
 
     if (widget.canChange?.call(parsed) == false) {
-      final previous = _value >= widget.min && _value <= widget.max
-          ? _value
-          : _cachedValue;
+      final previous =
+          _value >= widget.min && _value <= widget.max ? _value : _cachedValue;
       _updateController(_value, previous);
       if (previous != _value) setState(() => _value = previous);
       return;
