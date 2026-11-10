@@ -216,6 +216,7 @@ mixin SpinBoxMixin<T extends BaseSpinBox> on State<T> {
   /// EditableText invokes onSubmitted after requesting a focus change, but
   /// FocusNode listeners may be notified before or after that callback.
   /// Remember both paths so an editing completion is submitted just once.
+  @protected
   void submitValue(String text) {
     if (_submittedOnBlur) {
       _submittedOnBlur = false;

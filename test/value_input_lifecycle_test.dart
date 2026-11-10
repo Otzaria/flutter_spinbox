@@ -191,8 +191,28 @@ void main() {
     );
     await tester.showKeyboard(find.byType(SpinBox));
     final state = tester.state<SpinBoxState>(find.byType(SpinBox));
+    // ignore: invalid_use_of_protected_member
     state.submitValue('7');
     state.focusNode.unfocus();
+    await tester.pump();
+    expect(submissions, <double>[7]);
+  });
+
+  testWidgets('Done after focus loss does not resubmit', (tester) async {
+    final submissions = <double>[];
+    await tester.pumpWidget(
+      _app(SpinBox(
+        value: 7,
+        autofocus: true,
+        onSubmitted: submissions.add,
+      )),
+    );
+    await tester.showKeyboard(find.byType(SpinBox));
+    final state = tester.state<SpinBoxState>(find.byType(SpinBox));
+    state.focusNode.unfocus();
+    await tester.pump();
+    // ignore: invalid_use_of_protected_member
+    state.submitValue('7');
     await tester.pump();
     expect(submissions, <double>[7]);
   });
