@@ -287,7 +287,8 @@ mixin SpinBoxMixin<T extends BaseSpinBox> on State<T> {
       final sameEditingValue = hasFocus &&
           !precisionChanged &&
           !digitsChanged &&
-          double.tryParse(_controller.text) == nextValue;
+          (double.tryParse(_controller.text) == nextValue ||
+              (_controller.text.isEmpty && widget.emptyValue == nextValue));
       if (!sameEditingValue) _updateController(_value, nextValue);
       _value = _cachedValue = nextValue;
     } else if (boundsChanged || precisionChanged || digitsChanged) {

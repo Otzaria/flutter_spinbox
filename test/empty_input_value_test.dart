@@ -11,13 +11,14 @@ void main() {
       required ValueChanged<double> onChanged,
       required FocusNode focusNode,
       bool Function(double)? canChange,
+      double value = 5,
     }) {
       if (cupertino) {
         return CupertinoApp(
           home: CupertinoPageScaffold(
             child: CupertinoSpinBox(
               min: -10,
-              value: 5,
+              value: value,
               emptyValue: 0,
               decimals: 2,
               focusNode: focusNode,
@@ -31,7 +32,7 @@ void main() {
         home: Scaffold(
           body: SpinBox(
             min: -10,
-            value: 5,
+            value: value,
             emptyValue: 0,
             decimals: 2,
             focusNode: focusNode,
@@ -59,6 +60,42 @@ void main() {
       await tester.pump();
       expect(tester.widget<EditableText>(field).controller.text, '0.00');
       expect(changes, <double>[0]);
+    });
+
+    testWidgets('$name controlled input inserts into the cleared field', (
+      tester,
+    ) async {
+      double value = 5;
+      final changes = <double>[];
+      final focus = FocusNode();
+      addTearDown(focus.dispose);
+      await tester.pumpWidget(StatefulBuilder(
+        builder: (context, setState) => app(
+          value: value,
+          focusNode: focus,
+          onChanged: (next) {
+            changes.add(next);
+            setState(() => value = next);
+          },
+        ),
+      ));
+
+      final field = find.byType(EditableText);
+      await tester.enterText(field, '');
+      await tester.pump();
+      final editing = tester.widget<EditableText>(field).controller.value;
+      final caret = editing.selection.start;
+      tester.testTextInput.updateEditingValue(editing.copyWith(
+        text: editing.text.replaceRange(caret, editing.selection.end, '2'),
+        selection: TextSelection.collapsed(offset: caret + 1),
+      ));
+      await tester.pump();
+
+      expect(value, 2);
+      expect(changes, <double>[0, 2]);
+      expect(editing.text, isEmpty);
+      expect(
+          double.parse(tester.widget<EditableText>(field).controller.text), 2);
     });
 
     testWidgets('$name can replace a cleared value without restoring it', (
