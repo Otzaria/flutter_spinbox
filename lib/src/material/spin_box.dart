@@ -55,6 +55,7 @@ class SpinBox extends BaseSpinBox {
     this.step = 1,
     this.pageStep,
     this.value = 0,
+    this.emptyValue,
     this.interval = const Duration(milliseconds: 100),
     this.acceleration,
     this.decimals = 0,
@@ -130,6 +131,11 @@ class SpinBox extends BaseSpinBox {
   /// Defaults to `0.0`.
   @override
   final double value;
+
+  /// The value reported when the input is cleared. Defaults to `null`, which
+  /// retains the last valid value. Partial signs and decimals remain incomplete.
+  @override
+  final double? emptyValue;
 
   /// The number of decimal places used for formatting the value.
   ///

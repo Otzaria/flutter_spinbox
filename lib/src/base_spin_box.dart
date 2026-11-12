@@ -35,6 +35,7 @@ abstract class BaseSpinBox extends StatefulWidget {
   double get step;
   double? get pageStep;
   double get value;
+  double? get emptyValue => null;
   int get decimals;
   int get digits;
   void Function(double)? get onSubmitted;
@@ -123,9 +124,10 @@ mixin SpinBoxMixin<T extends BaseSpinBox> on State<T> {
 
   void _updateValue() {
     if (_updatingController) return;
-    // Empty input, a lone sign, or a decimal separator is incomplete text.
-    // Keep the last numeric value rather than broadcasting a spurious zero.
-    final parsed = double.tryParse(_controller.text);
+    // Empty input is incomplete unless the caller assigns it a numeric value.
+    final parsed = _controller.text.isEmpty
+        ? widget.emptyValue
+        : double.tryParse(_controller.text);
     if (parsed == null || !parsed.isFinite || parsed == _value) return;
 
     if (widget.canChange?.call(parsed) == false) {
